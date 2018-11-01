@@ -5,7 +5,7 @@ android {
     buildToolsVersion '26.0.2'
     defaultConfig {
         applicationId "com.mohammed.transport"
-        minSdkVersion 16 //minimum req for PayPal
+        minSdkVersion 21 //minimum req for PayPal
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
