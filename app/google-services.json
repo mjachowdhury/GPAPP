@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "908235759614",
+    "firebase_url": "https://gpapp-8bd98.firebaseio.com",
+    "project_id": "gpapp-8bd98",
+    "storage_bucket": "gpapp-8bd98.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:908235759614:android:abdbbfada6f4bf18",
+        "android_client_info": {
+          "package_name": "com.mohammed.transport"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "908235759614-aa959nh6h9772rvtbcgc5ks4r7ngble2.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.mohammed.transport",
+            "certificate_hash": "84b7ea675e5e5bc6dbe230ca7e7e3f8f8fe15bba"
+          }
+        },
+        {
+          "client_id": "908235759614-hvnjnhjj7ti01o80em8o4li9j0hi8j51.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB9Mg9N0KEVkqDhuAdoL3kzIZME4Bw9hVM"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "908235759614-hvnjnhjj7ti01o80em8o4li9j0hi8j51.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
