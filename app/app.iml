@@ -121,6 +121,7 @@
     <orderEntry type="library" name="Gradle: com.google.android.gms:play-services-fido-license-11.6.0" level="project" />
     <orderEntry type="library" name="Gradle: com.google.android.gms:play-services-panorama-11.6.0" level="project" />
     <orderEntry type="library" name="Gradle: com.google.android.gms:play-services-tasks-license-11.6.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.firebase:geofire-android-2.3.1" level="project" />
     <orderEntry type="library" name="Gradle: com.google.firebase:firebase-dynamic-links-11.6.0" level="project" />
     <orderEntry type="library" name="Gradle: com.google.firebase:firebase-database-connection-license-11.6.0" level="project" />
     <orderEntry type="library" name="Gradle: com.google.firebase:firebase-storage-common-11.6.0" level="project" />
@@ -197,9 +198,9 @@
     <orderEntry type="library" scope="TEST" name="Gradle: com.squareup:javawriter:2.1.1@jar" level="project" />
     <orderEntry type="library" name="Gradle: com.google.android.gms:play-services-awareness-11.6.0" level="project" />
     <orderEntry type="library" name="Gradle: com.google.android.gms:play-services-fitness-license-11.6.0" level="project" />
-    <orderEntry type="library" name="Gradle: com.firebase:geofire-android-2.1.1" level="project" />
     <orderEntry type="library" name="Gradle: com.google.android.gms:play-services-drive-11.6.0" level="project" />
     <orderEntry type="library" name="Gradle: com.android.support:support-media-compat-26.1.0" level="project" />
+    <orderEntry type="library" name="Gradle: com.firebase:geofire-common:2.3.1@jar" level="project" />
     <orderEntry type="library" name="Gradle: com.android.support:support-v4-26.1.0" level="project" />
     <orderEntry type="library" name="Gradle: com.squareup.okio:okio:1.11.0@jar" level="project" />
     <orderEntry type="library" name="Gradle: com.google.android.gms:play-services-appinvite-11.6.0" level="project" />

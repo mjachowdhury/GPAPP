@@ -50,8 +50,13 @@ dependencies {
     compile 'com.google.firebase:firebase-storage:16.0.4'*/
 
 
+    //old version
+    //compile 'com.firebase:geofire-android:2.1.1'
+    //new version
+    compile 'com.firebase:geofire-android:2.3.1'
 
-    compile 'com.firebase:geofire-android:2.1.1'
+
+
 
     //old one
     compile 'com.google.android.gms:play-services:11.6.0'
