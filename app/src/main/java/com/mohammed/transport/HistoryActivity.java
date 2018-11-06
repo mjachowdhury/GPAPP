@@ -2,9 +2,9 @@ package com.mohammed.transport;
 
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
+import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
@@ -64,7 +64,7 @@ public class HistoryActivity extends AppCompatActivity {
         mPayout = findViewById(R.id.payout);
         mPayoutEmail = findViewById(R.id.payoutEmail);
 
-        mHistoryRecyclerView = (RecyclerView) findViewById(R.id.historyRecyclerView);
+        mHistoryRecyclerView = findViewById(R.id.historyRecyclerView);
         mHistoryRecyclerView.setNestedScrollingEnabled(false);
         mHistoryRecyclerView.setHasFixedSize(true);
         mHistoryLayoutManager = new LinearLayoutManager(HistoryActivity.this);
@@ -190,14 +190,13 @@ public class HistoryActivity extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                String mMessage = e.getMessage().toString();
+                String mMessage = e.getMessage();
                 Log.w("failure Response", mMessage);
                 progress.dismiss();
             }
 
             @Override
-            public void onResponse(Call call, Response response)
-                    throws IOException {
+            public void onResponse(Call call, Response response) {
 
                 int responseCode = response.code();
 

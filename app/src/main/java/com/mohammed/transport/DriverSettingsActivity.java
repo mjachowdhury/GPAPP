@@ -62,16 +62,16 @@ public class DriverSettingsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_driver_settings);
 
 
-        mNameField = (EditText) findViewById(R.id.name);
-        mPhoneField = (EditText) findViewById(R.id.phone);
-        mCarField = (EditText) findViewById(R.id.car);
+        mNameField = findViewById(R.id.name);
+        mPhoneField = findViewById(R.id.phone);
+        mCarField = findViewById(R.id.car);
 
-        mProfileImage = (ImageView) findViewById(R.id.profileImage);
+        mProfileImage = findViewById(R.id.profileImage);
 
-        mRadioGroup = (RadioGroup) findViewById(R.id.radioGroup);
+        mRadioGroup = findViewById(R.id.radioGroup);
 
-        mBack = (Button) findViewById(R.id.back);
-        mConfirm = (Button) findViewById(R.id.confirm);
+        mBack = findViewById(R.id.back);
+        mConfirm = findViewById(R.id.confirm);
 
         mAuth = FirebaseAuth.getInstance();
         userID = mAuth.getCurrentUser().getUid();
@@ -99,43 +99,43 @@ public class DriverSettingsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 finish();
-                return;
             }
         });
     }
-    private void getUserInfo(){
+
+    private void getUserInfo() {
         mDriverDatabase.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists() && dataSnapshot.getChildrenCount()>0){
+                if (dataSnapshot.exists() && dataSnapshot.getChildrenCount() > 0) {
                     Map<String, Object> map = (Map<String, Object>) dataSnapshot.getValue();
-                    if(map.get("name")!=null){
+                    if (map.get("name") != null) {
                         mName = map.get("name").toString();
                         mNameField.setText(mName);
                     }
-                    if(map.get("phone")!=null){
+                    if (map.get("phone") != null) {
                         mPhone = map.get("phone").toString();
                         mPhoneField.setText(mPhone);
                     }
-                    if(map.get("car")!=null){
+                    if (map.get("car") != null) {
                         mCar = map.get("car").toString();
                         mCarField.setText(mCar);
                     }
-                    if(map.get("service")!=null){
+                    if (map.get("service") != null) {
                         mService = map.get("service").toString();
-                        switch (mService){
-                            case"standard":
+                        switch (mService) {
+                            case "standard":
                                 mRadioGroup.check(R.id.standard);
                                 break;
-                            case"luxary":
+                            case "luxary":
                                 mRadioGroup.check(R.id.luxary);
                                 break;
-                            case"sixseater":
+                            case "sixseater":
                                 mRadioGroup.check(R.id.sixseater);
                                 break;
                         }
                     }
-                    if(map.get("profileImageUrl")!=null){
+                    if (map.get("profileImageUrl") != null) {
                         mProfileImageUrl = map.get("profileImageUrl").toString();
                         Glide.with(getApplication()).load(mProfileImageUrl).into(mProfileImage);
                     }
@@ -149,7 +149,6 @@ public class DriverSettingsActivity extends AppCompatActivity {
     }
 
 
-
     private void saveUserInformation() {
         mName = mNameField.getText().toString();
         mPhone = mPhoneField.getText().toString();
@@ -157,9 +156,9 @@ public class DriverSettingsActivity extends AppCompatActivity {
 
         int selectId = mRadioGroup.getCheckedRadioButtonId();
 
-        final RadioButton radioButton = (RadioButton) findViewById(selectId);
+        final RadioButton radioButton = findViewById(selectId);
 
-        if (radioButton.getText() == null){
+        if (radioButton.getText() == null) {
             return;
         }
 
@@ -172,7 +171,7 @@ public class DriverSettingsActivity extends AppCompatActivity {
         userInfo.put("service", mService);
         mDriverDatabase.updateChildren(userInfo);
 
-        if(resultUri != null) {
+        if (resultUri != null) {
 
             StorageReference filePath = FirebaseStorage.getInstance().getReference().child("profile_images").child(userID);
             Bitmap bitmap = null;
@@ -191,7 +190,6 @@ public class DriverSettingsActivity extends AppCompatActivity {
                 @Override
                 public void onFailure(@NonNull Exception e) {
                     finish();
-                    return;
                 }
             });
             uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -204,10 +202,9 @@ public class DriverSettingsActivity extends AppCompatActivity {
                     mDriverDatabase.updateChildren(newImage);
 
                     finish();
-                    return;
                 }
             });
-        }else{
+        } else {
             finish();
         }
 
@@ -216,9 +213,8 @@ public class DriverSettingsActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == 1 && resultCode == Activity.RESULT_OK){
-            final Uri imageUri = data.getData();
-            resultUri = imageUri;
+        if (requestCode == 1 && resultCode == Activity.RESULT_OK) {
+            resultUri = data.getData();
             mProfileImage.setImageURI(resultUri);
         }
     }

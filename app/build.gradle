@@ -6,6 +6,7 @@ android {
     defaultConfig {
         applicationId "com.mohammed.transport"
         minSdkVersion 21 //minimum req for PayPal
+        //noinspection OldTargetApi
         targetSdkVersion 27
         versionCode 1
         versionName "1.0"
@@ -31,11 +32,14 @@ dependencies {
     implementation "com.android.support:support-v4:27.1.1"
     implementation 'com.android.support:cardview-v7:27.1.1'
 
-    // <GEOFIRE>
-    implementation 'com.firebase:geofire-android:2.3.1'
+    //ALEXANDER ((MAPS))
+    implementation 'com.github.jd-alexander:library:1.1.0'
 
     // <Paypal>
     implementation 'com.paypal.sdk:paypal-android-sdk:2.15.3'
+
+    // <GEOFIRE>
+    implementation 'com.firebase:geofire-android:2.3.1'
 
     // <Glide>
     implementation 'com.github.bumptech.glide:glide:4.8.0'
@@ -59,9 +63,6 @@ dependencies {
     implementation "com.google.android.gms:play-services-maps:16.0.0"
     implementation "com.google.android.gms:play-services-location:16.0.0"
     implementation 'com.google.android.gms:play-services-places:16.0.0'
-
-    //ALEXANDER ((MAPS))
-    implementation 'com.github.jd-alexander:library:1.1.0'
 
     //TEST Default
     testImplementation 'junit:junit:4.12'

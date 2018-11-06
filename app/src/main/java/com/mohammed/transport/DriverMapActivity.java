@@ -7,11 +7,11 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
-import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.Button;
@@ -30,8 +30,8 @@ import com.directions.route.Routing;
 import com.directions.route.RoutingListener;
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
-import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
@@ -76,8 +76,6 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
     private LatLng destinationLatLng, pickupLatLng;
     private float rideDistance;
 
-    private Boolean isLoggingOut = false;
-
     private SupportMapFragment mapFragment;
 
     private LinearLayout mCustomerInfo;
@@ -101,15 +99,15 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
 
 
 
-        mCustomerInfo = (LinearLayout) findViewById(R.id.customerInfo);
+        mCustomerInfo = findViewById(R.id.customerInfo);
 
-        mCustomerProfileImage = (ImageView) findViewById(R.id.customerProfileImage);
+        mCustomerProfileImage = findViewById(R.id.customerProfileImage);
 
-        mCustomerName = (TextView) findViewById(R.id.customerName);
-        mCustomerPhone = (TextView) findViewById(R.id.customerPhone);
-        mCustomerDestination = (TextView) findViewById(R.id.customerDestination);
+        mCustomerName = findViewById(R.id.customerName);
+        mCustomerPhone = findViewById(R.id.customerPhone);
+        mCustomerDestination = findViewById(R.id.customerDestination);
 
-        mWorkingSwitch = (Switch) findViewById(R.id.workingSwitch);
+        mWorkingSwitch = findViewById(R.id.workingSwitch);
         mWorkingSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -121,10 +119,10 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
             }
         });
 
-        mSettings = (Button) findViewById(R.id.settings);
-        mLogout = (Button) findViewById(R.id.logout);
-        mRideStatus = (Button) findViewById(R.id.rideStatus);
-        mHistory = (Button) findViewById(R.id.history);
+        mSettings = findViewById(R.id.settings);
+        mLogout = findViewById(R.id.logout);
+        mRideStatus = findViewById(R.id.rideStatus);
+        mHistory = findViewById(R.id.history);
         mRideStatus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -149,7 +147,6 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
         mLogout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                isLoggingOut = true;
 
                 disconnectDriver();
 
@@ -157,7 +154,6 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
                 Intent intent = new Intent(DriverMapActivity.this, MainActivity.class);
                 startActivity(intent);
                 finish();
-                return;
             }
         });
         mSettings.setOnClickListener(new View.OnClickListener() {
@@ -165,7 +161,6 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
             public void onClick(View v) {
                 Intent intent = new Intent(DriverMapActivity.this, DriverSettingsActivity.class);
                 startActivity(intent);
-                return;
             }
         });
         mHistory.setOnClickListener(new View.OnClickListener() {
@@ -174,7 +169,6 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
                 Intent intent = new Intent(DriverMapActivity.this, HistoryActivity.class);
                 intent.putExtra("customerOrDriver", "Drivers");
                 startActivity(intent);
-                return;
             }
         });
         getAssignedCustomer();
@@ -318,7 +312,7 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
 
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("customerRequest");
         GeoFire geoFire = new GeoFire(ref);
-        geoFire.removeLocation(customerId);
+        geoFire.removeLocation(customerId); // something goes wrong here
         customerId="";
         rideDistance = 0;
 
