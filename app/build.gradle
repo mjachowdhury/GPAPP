@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion '26.0.2'
+    compileSdkVersion 27
+    buildToolsVersion '28.0.3'
     defaultConfig {
         applicationId "com.mohammed.transport"
         minSdkVersion 21 //minimum req for PayPal
-        targetSdkVersion 25
+        targetSdkVersion 27
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -21,64 +21,53 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    //<ANDROID>
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    implementation "com.android.support:appcompat-v7:27.1.1"
+    implementation "com.android.support:palette-v7:27.1.1"
+    implementation "com.android.support:recyclerview-v7:27.1.1"
+    implementation "com.android.support:support-v4:27.1.1"
+    implementation 'com.android.support:cardview-v7:27.1.1'
 
-    //noinspection GradleCompatible
-    compile 'com.android.support:appcompat-v7:26.1.0'
-    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    // <GEOFIRE>
+    implementation 'com.firebase:geofire-android:2.3.1'
 
+    // <Paypal>
+    implementation 'com.paypal.sdk:paypal-android-sdk:2.15.3'
 
-    //old one
-    compile 'com.google.firebase:firebase-core:11.6.0'
+    // <Glide>
+    implementation 'com.github.bumptech.glide:glide:4.8.0'
+    implementation 'android.arch.lifecycle:extensions:1.1.1'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.7.1'
 
-    //new one
-    //compile 'com.google.firebase:firebase-core:16.0.4'
+    // <HITGIF> ( TextBox )
+    implementation 'com.github.HITGIF:TextFieldBoxes:1.4.4'
 
-    //old one
-    compile 'com.google.firebase:firebase-database:11.6.0'
-    compile 'com.google.firebase:firebase-auth:11.6.0'
-    compile 'com.google.firebase:firebase-storage:11.6.0'
+    //Firebase
+    implementation "com.google.android.gms:play-services-auth:16.0.1"
+    implementation 'com.google.firebase:firebase-core:16.0.4'
+    implementation "com.google.firebase:firebase-auth:16.0.4"
+    implementation 'com.firebaseui:firebase-ui-auth:4.2.0'
+    implementation "com.google.firebase:firebase-firestore:17.1.1"
+    implementation "com.google.firebase:firebase-database:16.0.3"
+    implementation "com.google.firebase:firebase-storage:16.0.3"
+    implementation 'com.facebook.android:facebook-android-sdk:4.37.0'
 
+    //Google maps
+    implementation "com.google.android.gms:play-services-maps:16.0.0"
+    implementation "com.google.android.gms:play-services-location:16.0.0"
+    implementation 'com.google.android.gms:play-services-places:16.0.0'
 
-    //new one
-    /*compile 'com.google.firebase:firebase-core:16.0.4'
-    compile 'com.google.firebase:firebase-database:16.0.4'
-    compile 'com.google.firebase:firebase-auth:16.0.5'
-    compile 'com.google.firebase:firebase-storage:16.0.4'*/
+    //ALEXANDER ((MAPS))
+    implementation 'com.github.jd-alexander:library:1.1.0'
 
+    //TEST Default
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
-    //old version
-    //compile 'com.firebase:geofire-android:2.1.1'
-    //new version
-    compile 'com.firebase:geofire-android:2.3.1'
-
-
-
-
-    //old one
-    compile 'com.google.android.gms:play-services:11.6.0'
-
-    //new one
-    //compile 'com.google.android.gms:play-services:16.0.4'
-
-
-    compile 'com.github.bumptech.glide:glide:4.0.0'
-    compile 'com.android.support:design:26.1.0'
-    compile 'com.android.support:cardview-v7:26.1.0'
-    compile 'com.github.jd-alexander:library:1.1.0'
-
-    compile 'com.paypal.sdk:paypal-android-sdk:2.15.3'
-    testCompile 'junit:junit:4.12'
-
-    //new one
-
-    //implementation 'com.google.firebase:firebase-core:16.0.1'
 }
-
-
-
 
 apply plugin: 'com.google.gms.google-services'
