@@ -44,6 +44,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -88,118 +89,23 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
 
     private RatingBar mRatingBar;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_costumer_map);
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+    LocationCallback mLocationCallback = new LocationCallback(){
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            for(Location location : locationResult.getLocations()){
+                if(getApplicationContext()!=null){
+                    mLastLocation = location;
+                    LatLng latLng = new LatLng(location.getLatitude(),location.getLongitude());
 
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+                    mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                    mMap.animateCamera(CameraUpdateFactory.zoomTo(14));
 
-        mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-
-        destinationLatLng = new LatLng(0.0,0.0);
-
-        mDriverInfo = findViewById(R.id.driverInfo);
-
-        mDriverProfileImage = findViewById(R.id.driverProfileImage);
-
-        mDriverName = findViewById(R.id.driverName);
-        mDriverPhone = findViewById(R.id.driverPhone);
-        mDriverCar = findViewById(R.id.driverCar);
-
-        mRatingBar = findViewById(R.id.ratingBar);
-
-        mRadioGroup = findViewById(R.id.radioGroup);
-        mRadioGroup.check(R.id.standard);
-
-        mLogout = findViewById(R.id.logout);
-        mRequest = findViewById(R.id.request);
-        mSettings = findViewById(R.id.settings);
-        mHistory = findViewById(R.id.history);
-
-        mLogout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                FirebaseAuth.getInstance().signOut();
-                Intent intent = new Intent(CustomerMapActivity.this, MainActivity.class);
-                startActivity(intent);
-                finish();
-            }
-        });
-
-        mRequest.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                if (requestBol){
-                    endRide();
-
-
-                }else{
-                    int selectId = mRadioGroup.getCheckedRadioButtonId();
-
-                    final RadioButton radioButton = findViewById(selectId);
-
-                    if (radioButton.getText() == null){
-                        return;
-                    }
-
-                    requestService = radioButton.getText().toString();
-
-                    requestBol = true;
-
-                    String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-                    DatabaseReference ref = FirebaseDatabase.getInstance().getReference("customerRequest");
-                    GeoFire geoFire = new GeoFire(ref);
-                    geoFire.setLocation(userId, new GeoLocation(mLastLocation.getLatitude(), mLastLocation.getLongitude()));
-
-                    pickupLocation = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
-                    pickupMarker = mMap.addMarker(new MarkerOptions().position(pickupLocation).title("Pickup Here").icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_pickup)));
-
-                    mRequest.setText("Getting your Driver....");
-
-                    getClosestDriver();
+                    if(!getDriversAroundStarted)
+                        getDriversAround();
                 }
             }
-        });
-        mSettings.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(CustomerMapActivity.this, CustomerSettingsActivity.class);
-                startActivity(intent);
-            }
-        });
-
-        mHistory.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(CustomerMapActivity.this, HistoryActivity.class);
-                intent.putExtra("customerOrDriver", "Customers");
-                startActivity(intent);
-            }
-        });
-
-        PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
-                getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
-
-        autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
-            @Override
-            public void onPlaceSelected(Place place) {
-                // TODO: Get info about the selected place.
-                destination = place.getName().toString();
-                destinationLatLng = place.getLatLng();
-            }
-            @Override
-            public void onError(Status status) {
-                // TODO: Handle the error.
-            }
-        });
-
-
-    }
+        }
+    };
     private int radius = 1;
     private Boolean driverFound = false;
     private String driverFoundID;
@@ -445,6 +351,119 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
         mDriverProfileImage.setImageResource(R.mipmap.ic_default_user);
     }
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_customer_map);
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+
+        destinationLatLng = new LatLng(0.0,0.0);
+
+        mDriverInfo = findViewById(R.id.driverInfo);
+
+        mDriverProfileImage = findViewById(R.id.driverProfileImage);
+
+        mDriverName = findViewById(R.id.driverName);
+        mDriverPhone = findViewById(R.id.driverPhone);
+        mDriverCar = findViewById(R.id.driverCar);
+
+        mRatingBar = findViewById(R.id.ratingBar);
+
+        mRadioGroup = findViewById(R.id.radioGroup);
+        mRadioGroup.check(R.id.standard);
+
+        mLogout = findViewById(R.id.logout);
+        mRequest = findViewById(R.id.request);
+        mSettings = findViewById(R.id.settings);
+        mHistory = findViewById(R.id.history);
+
+        mLogout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FirebaseAuth.getInstance().signOut();
+                Intent intent = new Intent(CustomerMapActivity.this, MainActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        });
+
+        mRequest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (requestBol){
+                    endRide();
+
+
+                }else{
+                    int selectId = mRadioGroup.getCheckedRadioButtonId();
+
+                    final RadioButton radioButton = findViewById(selectId);
+
+                    if (radioButton.getText() == null){
+                        return;
+                    }
+
+                    requestService = radioButton.getText().toString();
+
+                    requestBol = true;
+
+                    String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+                    DatabaseReference ref = FirebaseDatabase.getInstance().getReference("customerRequest");
+                    GeoFire geoFire = new GeoFire(ref);
+                    //geoFire.setLocation(userId, new GeoLocation(mLastLocation.getLatitude(), mLastLocation.getLongitude()));
+
+                    pickupLocation = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+                    pickupMarker = mMap.addMarker(new MarkerOptions().position(pickupLocation).title("Pickup Here").icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_pickup)));
+
+                    mRequest.setText("Getting your Driver....");
+
+                    getClosestDriver();
+                }
+            }
+        });
+        mSettings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(CustomerMapActivity.this, CustomerSettingsActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        mHistory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(CustomerMapActivity.this, HistoryActivity.class);
+                intent.putExtra("customerOrDriver", "Customers");
+                startActivity(intent);
+            }
+        });
+
+        PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
+                getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
+
+        autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
+            @Override
+            public void onPlaceSelected(Place place) {
+                // tod o Get info about the selected place.
+                destination = place.getName().toString();
+                destinationLatLng = place.getLatLng();
+            }
+            @Override
+            public void onError(Status status) {
+                // TOD O: Handle the error.
+            }
+        });
+
+
+    }
+
     /*-------------------------------------------- Map specific functions -----
     |  Function(s) onMapReady, buildGoogleApiClient, onLocationChanged, onConnected
     |
@@ -475,27 +494,24 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
 
         mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
         mMap.setMyLocationEnabled(true);
+        mFusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        // Got last known location. In some rare situations this can be null.
+                        if (location != null) {
+                            LatLng latLng = new LatLng(location.getLongitude(),location.getLatitude());
+                            mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                            mMap.animateCamera(CameraUpdateFactory.zoomTo(14));
+                            // Logic to handle location object
+                        }
+
+                    }
+                });
+
+
+
     }
-
-    LocationCallback mLocationCallback = new LocationCallback(){
-        @Override
-        public void onLocationResult(LocationResult locationResult) {
-            for(Location location : locationResult.getLocations()){
-                if(getApplicationContext()!=null){
-                    mLastLocation = location;
-
-                    LatLng latLng = new LatLng(location.getLatitude(),location.getLongitude());
-
-                    mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-                    mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
-
-
-                    if(!getDriversAroundStarted)
-                        getDriversAround();
-                }
-            }
-        }
-    };
 
     /*-------------------------------------------- onRequestPermissionsResult -----
     |  Function onRequestPermissionsResult

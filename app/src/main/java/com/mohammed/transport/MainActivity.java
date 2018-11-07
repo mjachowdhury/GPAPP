@@ -18,9 +18,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
-    private static final int RC_SIGN_IN = 123 ;
+    private static final int RC_SIGN_IN = 123;
     private Button mDriver, mCustomer;
     private FirebaseAuth mAuth;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
-    private void signInFirebaseUI(){
+    private void signInFirebaseUI() {
         startActivityForResult(
                 AuthUI.getInstance()
                         .createSignInIntentBuilder()
@@ -61,35 +62,35 @@ public class MainActivity extends AppCompatActivity {
                                 new AuthUI.IdpConfig.FacebookBuilder().build(),
                                 new AuthUI.IdpConfig.EmailBuilder().build()))
                         .setIsSmartLockEnabled(false)
+                        .setTheme(R.style.AppTheme)
                         .build(),
                 RC_SIGN_IN);
     }
+
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         // RC_SIGN_IN is the request code you passed into startActivityForResult(...) when starting the sign in flow.
-        if (requestCode == RC_SIGN_IN) {
+        if (requestCode == RC_SIGN_IN) {// Successfully signed in
             IdpResponse response = IdpResponse.fromResultIntent(data);
-
-            // Successfully signed in
             if (resultCode == RESULT_OK) {
+
                 mAuth = FirebaseAuth.getInstance();
                 String user_id = mAuth.getCurrentUser().getUid();
                 addUserIdtoFirebase(user_id);
                 startActivityFinishCurrentActivity(CustomerMapActivity.class);
-            } else {
-                // Sign in failed
-                if (response == null) {
-                    // User pressed back button
-                    Toast.makeText(this,R.string.sign_in_cancelled , Toast.LENGTH_SHORT).show();
+
+            } else {// Sign in failed
+                if (response == null) {// User pressed back button
+                    Toast.makeText(this, R.string.sign_in_cancelled, Toast.LENGTH_SHORT).show();
                     return;
                 }
 
                 if (response.getError().getErrorCode() == ErrorCodes.NO_NETWORK) {
-                    Toast.makeText(this,R.string.no_internet_connection , Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.no_internet_connection, Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                Toast.makeText(this,R.string.unknown_error , Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.unknown_error, Toast.LENGTH_SHORT).show();
                 Log.e("MAINACTIVITY", "Sign-in error: ", response.getError());
             }
         }

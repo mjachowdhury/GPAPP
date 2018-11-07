@@ -19,15 +19,18 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <service android:name="com.mohammed.transport.onAppKilled" android:stopWithTask="false"/>
-        <activity android:name="com.mohammed.transport.MainActivity">
+        <service
+            android:name=".onAppKilled"
+            android:stopWithTask="false" />
+
+        <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.mohammed.transport.DriverLoginActivity" />
+        <activity android:name=".DriverLoginActivity" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.
              (See the file "res/values/google_maps_api.xml").
@@ -41,13 +44,18 @@
             android:value="@string/google_maps_key" />
 
         <activity
-            android:name="com.mohammed.transport.DriverMapActivity"
+            android:name=".DriverMapActivity"
             android:label="@string/title_activity_driver_map" />
-        <activity android:name="com.mohammed.transport.CustomerMapActivity" />
-        <activity android:name="com.mohammed.transport.CustomerSettingsActivity" />
-        <activity android:name="com.mohammed.transport.DriverSettingsActivity" />
-        <activity android:name="com.mohammed.transport.HistoryActivity" />
-        <activity android:name="com.mohammed.transport.HistorySingleActivity"></activity>
+        <activity android:name=".CustomerMapActivity" />
+        <activity android:name=".CustomerSettingsActivity" />
+        <activity android:name=".DriverSettingsActivity" />
+        <activity android:name=".HistoryActivity" />
+        <activity android:name=".HistorySingleActivity" />
+        <activity
+            android:name=".MapActivity"
+            android:label="@string/title_activity_map"
+            android:theme="@style/AppTheme.NoActionBar">
+        </activity>
     </application>
 
 </manifest>
