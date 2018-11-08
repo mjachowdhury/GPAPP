@@ -145,7 +145,7 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
                 }
             }
         });
-
+        //vehicle will logout section from the firebase
         mLogout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -206,6 +206,7 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
     Marker pickupMarker;
     private DatabaseReference assignedCustomerPickupLocationRef;
     private ValueEventListener assignedCustomerPickupLocationRefListener;
+
     private void getAssignedCustomerPickupLocation(){
         assignedCustomerPickupLocationRef = FirebaseDatabase.getInstance().getReference().child("customerRequest").child(customerId).child("l");
         assignedCustomerPickupLocationRefListener = assignedCustomerPickupLocationRef.addValueEventListener(new ValueEventListener() {
@@ -363,10 +364,19 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
         return timestamp;
     }
 
-
+    /**
+     * Here map will start
+     * @param googleMap
+     */
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        //below code will show the map marker in the sydney
+        //if i change lat and lng it will show to that palce
+
+        /*LatLng sydney = new LatLng(-34,151);
+        mMap.addMarker(new MarkerOptions().position(sydney).title("Here you are in Sydney"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));*/
 
         mLocationRequest = new LocationRequest();
         mLocationRequest.setInterval(1000);
@@ -399,13 +409,14 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
                     mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
                     mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
 
-                    String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                    String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();//it will get the vehicle available
                     DatabaseReference refAvailable = FirebaseDatabase.getInstance().getReference("driversAvailable");
                     DatabaseReference refWorking = FirebaseDatabase.getInstance().getReference("driversWorking");
                     GeoFire geoFireAvailable = new GeoFire(refAvailable);
                     GeoFire geoFireWorking = new GeoFire(refWorking);
 
                     switch (customerId){
+                        //here geofire will get and update the location
                         case "":
                             geoFireWorking.removeLocation(userId);
                             geoFireAvailable.setLocation(userId, new GeoLocation(location.getLatitude(), location.getLongitude()));
@@ -478,7 +489,7 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("driversAvailable");
 
         GeoFire geoFire = new GeoFire(ref);
-        geoFire.removeLocation(userId);
+        geoFire.removeLocation(userId);//when vehicle will checkout then geofire will remove the locaiton
     }
 
 
