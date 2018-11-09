@@ -172,25 +172,17 @@ public class HistorySingleActivity extends AppCompatActivity implements OnMapRea
     private void displayCustomerRelatedObjects() {
         mRatingBar.setVisibility(View.VISIBLE);
         mPay.setVisibility(View.VISIBLE);
-        mRatingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
-            @Override
-            public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
-                historyRideInfoDb.child("rating").setValue(rating);
-                DatabaseReference mDriverRatingDb = FirebaseDatabase.getInstance().getReference().child("Users").child("Drivers").child(driverId).child("rating");
-                mDriverRatingDb.child(rideId).setValue(rating);
-            }
+        mRatingBar.setOnRatingBarChangeListener((ratingBar, rating, fromUser) -> {
+            historyRideInfoDb.child("rating").setValue(rating);
+            DatabaseReference mDriverRatingDb = FirebaseDatabase.getInstance().getReference().child("Users").child("Drivers").child(driverId).child("rating");
+            mDriverRatingDb.child(rideId).setValue(rating);
         });
         if(customerPaid){
             mPay.setEnabled(false);
         }else{
             mPay.setEnabled(true);
         }
-        mPay.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                payPalPayment();
-            }
-        });
+        mPay.setOnClickListener(view -> payPalPayment());
     }
 
     private int PAYPAL_REQUEST_CODE = 1;

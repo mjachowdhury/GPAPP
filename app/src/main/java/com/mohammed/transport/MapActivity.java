@@ -33,7 +33,6 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.tasks.OnSuccessListener;
 
 public class MapActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback {
@@ -144,14 +143,11 @@ public class MapActivity extends AppCompatActivity
             mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
             mMap.setMyLocationEnabled(true);
             mFusedLocationClient.getLastLocation()
-                    .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                        @Override
-                        public void onSuccess(Location location) {// Got last known location. In some rare situations this can be null.
-                            if (location != null) {
-                                LatLng latLng = new LatLng(location.getLongitude(), location.getLatitude());
-                                mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-                                mMap.animateCamera(CameraUpdateFactory.zoomTo(14));
-                            }
+                    .addOnSuccessListener(this, location -> {// Got last known location. In some rare situations this can be null.
+                        if (location != null) {
+                            LatLng latLng = new LatLng(location.getLongitude(), location.getLatitude());
+                            mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                            mMap.animateCamera(CameraUpdateFactory.zoomTo(14));
                         }
                     });
         }
@@ -168,14 +164,11 @@ public class MapActivity extends AppCompatActivity
                         mFusedLocationClient.requestLocationUpdates(mLocationRequest, mLocationCallback, Looper.myLooper());
                         mMap.setMyLocationEnabled(true);
                         mFusedLocationClient.getLastLocation()
-                                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                                    @Override
-                                    public void onSuccess(Location location) {// Got last known location. In some rare situations this can be null.
-                                        if (location != null) {
-                                            LatLng latLng = new LatLng(location.getLongitude(), location.getLatitude());
-                                            mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-                                            mMap.animateCamera(CameraUpdateFactory.zoomTo(14));
-                                        }
+                                .addOnSuccessListener(this, location -> {// Got last known location. In some rare situations this can be null.
+                                    if (location != null) {
+                                        LatLng latLng = new LatLng(location.getLongitude(), location.getLatitude());
+                                        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                                        mMap.animateCamera(CameraUpdateFactory.zoomTo(14));
                                     }
                                 });
                     }

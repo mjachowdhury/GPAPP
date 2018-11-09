@@ -83,12 +83,7 @@ public class HistoryActivity extends AppCompatActivity {
             mPayoutEmail.setVisibility(View.VISIBLE);
         }
 
-        mPayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                payoutRequest();
-            }
-        });
+        mPayout.setOnClickListener(view -> payoutRequest());
     }
 
     private void getUserHistoryIds() {

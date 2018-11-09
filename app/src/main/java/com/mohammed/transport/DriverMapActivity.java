@@ -2,7 +2,6 @@ package com.mohammed.transport;
 
 import android.Manifest;
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -15,7 +14,6 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Switch;
@@ -108,14 +106,11 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
         mCustomerDestination = findViewById(R.id.customerDestination);
 
         mWorkingSwitch = findViewById(R.id.workingSwitch);
-        mWorkingSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked){
-                    connectDriver();
-                }else{
-                    disconnectDriver();
-                }
+        mWorkingSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked){
+                connectDriver();
+            }else{
+                disconnectDriver();
             }
         });
 
@@ -123,53 +118,41 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
         mLogout = findViewById(R.id.logout);
         mRideStatus = findViewById(R.id.rideStatus);
         mHistory = findViewById(R.id.history);
-        mRideStatus.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                switch(status){
-                    case 1:
-                        status=2;
-                        erasePolylines();
-                        if(destinationLatLng.latitude!=0.0 && destinationLatLng.longitude!=0.0){
-                            getRouteToMarker(destinationLatLng);
-                        }
-                        mRideStatus.setText("drive completed");
+        mRideStatus.setOnClickListener(v -> {
+            switch(status){
+                case 1:
+                    status=2;
+                    erasePolylines();
+                    if(destinationLatLng.latitude!=0.0 && destinationLatLng.longitude!=0.0){
+                        getRouteToMarker(destinationLatLng);
+                    }
+                    mRideStatus.setText("drive completed");
 
-                        break;
-                    case 2:
-                        recordRide();
-                        endRide();
-                        break;
-                }
+                    break;
+                case 2:
+                    recordRide();
+                    endRide();
+                    break;
             }
         });
 
-        mLogout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        mLogout.setOnClickListener(v -> {
 
-                disconnectDriver();
+            disconnectDriver();
 
-                FirebaseAuth.getInstance().signOut();
-                Intent intent = new Intent(DriverMapActivity.this, MainActivity.class);
-                startActivity(intent);
-                finish();
-            }
+            FirebaseAuth.getInstance().signOut();
+            Intent intent = new Intent(DriverMapActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish();
         });
-        mSettings.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(DriverMapActivity.this, DriverSettingsActivity.class);
-                startActivity(intent);
-            }
+        mSettings.setOnClickListener(v -> {
+            Intent intent = new Intent(DriverMapActivity.this, DriverSettingsActivity.class);
+            startActivity(intent);
         });
-        mHistory.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(DriverMapActivity.this, HistoryActivity.class);
-                intent.putExtra("customerOrDriver", "Drivers");
-                startActivity(intent);
-            }
+        mHistory.setOnClickListener(v -> {
+            Intent intent = new Intent(DriverMapActivity.this, HistoryActivity.class);
+            intent.putExtra("customerOrDriver", "Drivers");
+            startActivity(intent);
         });
         getAssignedCustomer();
     }
@@ -421,12 +404,9 @@ public class DriverMapActivity extends FragmentActivity implements OnMapReadyCal
                 new AlertDialog.Builder(this)
                         .setTitle("give permission")
                         .setMessage("give permission message")
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                ActivityCompat.requestPermissions(DriverMapActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-                            }
-                        })
+                        .setPositiveButton("OK", (dialogInterface, i) ->
+                                ActivityCompat.requestPermissions(DriverMapActivity.this,
+                                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1))
                     .create()
                     .show();
             }

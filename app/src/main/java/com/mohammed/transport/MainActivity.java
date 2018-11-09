@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -32,19 +31,9 @@ public class MainActivity extends AppCompatActivity {
 
         //setting onclick listener for driver and customer
         startService(new Intent(MainActivity.this, onAppKilled.class));
-        mDriver.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivityFinishCurrentActivity(MapActivity.class);
-            }
-        });
+        mDriver.setOnClickListener(v -> startActivityFinishCurrentActivity(MapActivity.class));
 
-        mCustomer.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                signInFirebaseUI();
-            }
-        });
+        mCustomer.setOnClickListener(v -> signInFirebaseUI());
     }
 
     private void startActivityFinishCurrentActivity(Class activity) {

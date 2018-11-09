@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
@@ -16,8 +15,6 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -186,23 +183,15 @@ public class DriverSettingsActivity extends AppCompatActivity {
             byte[] data = baos.toByteArray();
             UploadTask uploadTask = filePath.putBytes(data);
 
-            uploadTask.addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    finish();
-                }
-            });
-            uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    Uri downloadUrl = taskSnapshot.getUploadSessionUri(); // REPLACED DEPRECATED METHOD
+            uploadTask.addOnFailureListener(e -> finish());
+            uploadTask.addOnSuccessListener(taskSnapshot -> {
+                Uri downloadUrl = taskSnapshot.getUploadSessionUri(); // REPLACED DEPRECATED METHOD
 
-                    Map newImage = new HashMap();
-                    newImage.put("profileImageUrl", downloadUrl.toString());
-                    mDriverDatabase.updateChildren(newImage);
+                Map newImage = new HashMap();
+                newImage.put("profileImageUrl", downloadUrl.toString());
+                mDriverDatabase.updateChildren(newImage);
 
-                    finish();
-                }
+                finish();
             });
         } else {
             finish();

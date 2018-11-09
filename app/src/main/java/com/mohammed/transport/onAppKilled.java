@@ -4,6 +4,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.firebase.geofire.GeoFire;
 import com.google.firebase.auth.FirebaseAuth;
@@ -21,9 +22,13 @@ public class onAppKilled extends Service {
     public void onTaskRemoved(Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
 
-        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("driversAvailable");
-        GeoFire geoFire = new GeoFire(ref);
-        geoFire.removeLocation(userId);
+        try {
+            String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("driversAvailable");
+            GeoFire geoFire = new GeoFire(ref);
+            geoFire.removeLocation(userId);
+        } catch (NullPointerException e) {
+            Log.d("OnAppKIlled", e.getMessage());
+        }
     }
 }

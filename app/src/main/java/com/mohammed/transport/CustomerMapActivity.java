@@ -1,7 +1,6 @@
 package com.mohammed.transport;
 
 import android.Manifest;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -383,67 +382,54 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
         mSettings = findViewById(R.id.settings);
         mHistory = findViewById(R.id.history);
 
-        mLogout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                FirebaseAuth.getInstance().signOut();
-                Intent intent = new Intent(CustomerMapActivity.this, MainActivity.class);
-                startActivity(intent);
-                finish();
-            }
+        mLogout.setOnClickListener(v -> {
+            FirebaseAuth.getInstance().signOut();
+            Intent intent = new Intent(CustomerMapActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish();
         });
 
-        mRequest.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                if (requestBol){
-                    endRide();
+        mRequest.setOnClickListener(v -> {
+            if (requestBol){
+                endRide();
 
 
-                }else{
-                    int selectId = mRadioGroup.getCheckedRadioButtonId();
+            }else{
+                int selectId = mRadioGroup.getCheckedRadioButtonId();
 
-                    final RadioButton radioButton = findViewById(selectId);
+                final RadioButton radioButton = findViewById(selectId);
 
-                    if (radioButton.getText() == null){
-                        return;
-                    }
-
-                    requestService = radioButton.getText().toString();
-
-                    requestBol = true;
-
-                    String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-                    DatabaseReference ref = FirebaseDatabase.getInstance().getReference("customerRequest");
-                    GeoFire geoFire = new GeoFire(ref);
-                    //geoFire.setLocation(userId, new GeoLocation(mLastLocation.getLatitude()?,mLastLocation.getLongitude()));
-
-                    pickupLocation = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
-                    pickupMarker = mMap.addMarker(new MarkerOptions().position(pickupLocation).title("Pickup Here").icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_pickup)));
-
-                    mRequest.setText("Getting your Driver....");
-
-                    getClosestDriver();
+                if (radioButton.getText() == null){
+                    return;
                 }
+
+                requestService = radioButton.getText().toString();
+
+                requestBol = true;
+
+                String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+                DatabaseReference ref = FirebaseDatabase.getInstance().getReference("customerRequest");
+                GeoFire geoFire = new GeoFire(ref);
+                //geoFire.setLocation(userId, new GeoLocation(mLastLocation.getLatitude()?,mLastLocation.getLongitude()));
+
+                pickupLocation = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+                pickupMarker = mMap.addMarker(new MarkerOptions().position(pickupLocation).title("Pickup Here").icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_pickup)));
+
+                mRequest.setText("Getting your Driver....");
+
+                getClosestDriver();
             }
         });
-        mSettings.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(CustomerMapActivity.this, CustomerSettingsActivity.class);
-                startActivity(intent);
-            }
+        mSettings.setOnClickListener(v -> {
+            Intent intent = new Intent(CustomerMapActivity.this, CustomerSettingsActivity.class);
+            startActivity(intent);
         });
 
-        mHistory.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(CustomerMapActivity.this, HistoryActivity.class);
-                intent.putExtra("customerOrDriver", "Customers");
-                startActivity(intent);
-            }
+        mHistory.setOnClickListener(v -> {
+            Intent intent = new Intent(CustomerMapActivity.this, HistoryActivity.class);
+            intent.putExtra("customerOrDriver", "Customers");
+            startActivity(intent);
         });
 
         PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
@@ -530,12 +516,9 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
                 new android.app.AlertDialog.Builder(this)
                         .setTitle("give permission")
                         .setMessage("give permission message")
-                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                ActivityCompat.requestPermissions(CustomerMapActivity.this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 1);
-                            }
-                        })
+                        .setPositiveButton("OK", (dialogInterface, i) ->
+                                ActivityCompat.requestPermissions(CustomerMapActivity.this,
+                                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1))
                         .create()
                         .show();
             }

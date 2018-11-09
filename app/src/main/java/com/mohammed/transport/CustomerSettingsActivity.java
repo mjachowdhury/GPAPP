@@ -6,16 +6,12 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -69,28 +65,15 @@ public class CustomerSettingsActivity extends AppCompatActivity {
 
         getUserInfo();
 
-        mProfileImage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_PICK);
-                intent.setType("image/*");
-                startActivityForResult(intent, 1);
-            }
+        mProfileImage.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.setType("image/*");
+            startActivityForResult(intent, 1);
         });
 
-        mConfirm.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saveUserInformation();
-            }
-        });
+        mConfirm.setOnClickListener(v -> saveUserInformation());
 
-        mBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+        mBack.setOnClickListener(v -> finish());
     }
     private void getUserInfo(){
         mCustomerDatabase.addValueEventListener(new ValueEventListener() {
@@ -145,23 +128,15 @@ public class CustomerSettingsActivity extends AppCompatActivity {
             byte[] data = baos.toByteArray();
             UploadTask uploadTask = filePath.putBytes(data);
 
-            uploadTask.addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    finish();
-                }
-            });
-            uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    Uri downloadUrl = taskSnapshot.getUploadSessionUri(); // After UPDATING library this method was deprecated
+            uploadTask.addOnFailureListener(e -> finish());
+            uploadTask.addOnSuccessListener(taskSnapshot -> {
+                Uri downloadUrl = taskSnapshot.getUploadSessionUri(); // After UPDATING library this method was deprecated
 
-                    Map newImage = new HashMap();
-                    newImage.put("profileImageUrl", downloadUrl.toString());
-                    mCustomerDatabase.updateChildren(newImage);
+                Map newImage = new HashMap();
+                newImage.put("profileImageUrl", downloadUrl.toString());
+                mCustomerDatabase.updateChildren(newImage);
 
-                    finish();
-                }
+                finish();
             });
 
 
