@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
         mDriver.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivityFinishCurrentActivity(DriverLoginActivity.class);
+                startActivityFinishCurrentActivity(MapActivity.class);
             }
         });
 

@@ -95,6 +95,7 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
             for(Location location : locationResult.getLocations()){
                 if(getApplicationContext()!=null){
                     mLastLocation = location;
+
                     LatLng latLng = new LatLng(location.getLatitude(),location.getLongitude());
 
                     mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
@@ -417,7 +418,7 @@ public class CustomerMapActivity extends FragmentActivity implements OnMapReadyC
 
                     DatabaseReference ref = FirebaseDatabase.getInstance().getReference("customerRequest");
                     GeoFire geoFire = new GeoFire(ref);
-                    //geoFire.setLocation(userId, new GeoLocation(mLastLocation.getLatitude(), mLastLocation.getLongitude()));
+                    //geoFire.setLocation(userId, new GeoLocation(mLastLocation.getLatitude()?,mLastLocation.getLongitude()));
 
                     pickupLocation = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
                     pickupMarker = mMap.addMarker(new MarkerOptions().position(pickupLocation).title("Pickup Here").icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_pickup)));
