@@ -1,6 +1,7 @@
 package com.mohammed.transport;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -11,10 +12,13 @@ import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
     private static final int RC_SIGN_IN = 123;
@@ -58,15 +62,17 @@ public class MainActivity extends AppCompatActivity {
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        // RC_SIGN_IN is the request code you passed into startActivityForResult(...) when starting the sign in flow.
-        if (requestCode == RC_SIGN_IN) {// Successfully signed in
+        if (requestCode == RC_SIGN_IN) { // Successfully signed in
             IdpResponse response = IdpResponse.fromResultIntent(data);
             if (resultCode == RESULT_OK) {
-
                 mAuth = FirebaseAuth.getInstance();
-                String user_id = mAuth.getCurrentUser().getUid();
-                addUserIdtoFirebase(user_id);
-                startActivityFinishCurrentActivity(MapActivity.class);
+                FirebaseUser currentUser = mAuth.getCurrentUser();
+                if (currentUser != null) {
+                    addUserToFirebase(mAuth.getCurrentUser());
+                    startActivityFinishCurrentActivity(MapActivity.class);
+                } else {
+                    Toast.makeText(this, R.string.fetch_firebase_failed, Toast.LENGTH_SHORT).show();
+                }
 
             } else {// Sign in failed
                 if (response == null) {// User pressed back button
@@ -74,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
-                if (response.getError().getErrorCode() == ErrorCodes.NO_NETWORK) {
+                if (Objects.requireNonNull(response.getError()).getErrorCode() == ErrorCodes.NO_NETWORK) {
                     Toast.makeText(this, R.string.no_internet_connection, Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -85,8 +91,30 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void addUserIdtoFirebase(String user_id) {
-        DatabaseReference current_user_db = FirebaseDatabase.getInstance().getReference().child("Users").child("Customers").child(user_id);
-        current_user_db.setValue(true);
+    /**
+     * @param firebaseUser
+     * add a New firebase User
+     */
+    private void addUserToFirebase(FirebaseUser firebaseUser) {
+        String userID = firebaseUser.getUid();
+        Uri userIcon = firebaseUser.getPhotoUrl();
+        HashMap<String, String> map = new HashMap<>();
+        map.put("name", firebaseUser.getDisplayName());
+        map.put("phone", firebaseUser.getPhoneNumber());
+        map.put("email", firebaseUser.getEmail());
+        map.put("profileImageUrl", userIcon != null ? userIcon.toString() : "");
+        Log.d("DB",map.toString());
+        DatabaseReference current_user_db = FirebaseDatabase.getInstance().getReference("Users/Customers").child(userID);
+        current_user_db.setValue(true); // Create the node User ID
+        current_user_db.setValue(map);  // add Information to that user
+
+
+
+
+
+
+
+
+
     }
 }
