@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Looper;
 import android.support.annotation.NonNull;
@@ -20,8 +21,14 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+import com.firebase.geofire.GeoFire;
+import com.firebase.geofire.GeoLocation;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -33,18 +40,29 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class MapActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback {
 
     private static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 987;
-
     private GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationClient;
-    private Location mLastLocation;
+    public  Location mLastLocation;
     private LocationRequest mLocationRequest;
     private LocationCallback mLocationCallback = getLocationCallback();
+
+    private GeoFire geoFire;
+    private FirebaseAuth mAuth;
     private SupportMapFragment mapFragment;
+
+    private ImageView mUserIcon;
+    private TextView mUserName,mEmailAddress;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +72,7 @@ public class MapActivity extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = findViewById(R.id.floating_call_my_taxi);
+
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
@@ -69,6 +88,16 @@ public class MapActivity extends AppCompatActivity
 
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        View headerView = navigationView.getHeaderView(0);
+
+        mAuth = FirebaseAuth.getInstance();
+        mUserIcon = headerView.findViewById(R.id.mUserIcon);
+        mUserName = headerView.findViewById(R.id.mUserName);
+        mEmailAddress = headerView.findViewById(R.id.mEmailAddress);
+        updateDrawerUI(mAuth.getCurrentUser());
+
+
+
 
 
     }
@@ -86,7 +115,7 @@ public class MapActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.activity_map_drawer, menu);
+        getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 
@@ -146,6 +175,7 @@ public class MapActivity extends AppCompatActivity
                     .addOnSuccessListener(this, location -> {// Got last known location. In some rare situations this can be null.
                         if (location != null) {
                             LatLng latLng = new LatLng(location.getLongitude(), location.getLatitude());
+                            mLastLocation = location;
                             mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
                             mMap.animateCamera(CameraUpdateFactory.zoomTo(14));
                         }
@@ -182,7 +212,25 @@ public class MapActivity extends AppCompatActivity
 
     private void callMyTaxi() {
         Log.d("Maps Activity", "Taxi as been called");
-        Toast.makeText(this, R.string.calling_taxi, Toast.LENGTH_SHORT).show();
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Users/Customers/").child("0ZJDXv6wRjcNhcB6skf1uNjm4jG3");
+        geoFire = new GeoFire(ref);
+        geoFire.setLocation("firebase-hq", new GeoLocation(mLastLocation.getLatitude(), mLastLocation.getLongitude()), new GeoFire.CompletionListener() {
+            /**
+             * Called once a location was successfully saved on the server or an error occurred. On success, the parameter
+             * error will be null; in case of an error, the error will be passed to this method.
+             *
+             * @param key   The key whose location was saved
+             * @param error The error or null if no error occurred
+             */
+            @Override
+            public void onComplete(String key, DatabaseError error) {
+                if (error != null) {
+                    Toast.makeText(getApplicationContext(), R.string.unknown_error, Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getApplicationContext(), R.string.calling_taxi, Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     @NonNull
@@ -195,6 +243,7 @@ public class MapActivity extends AppCompatActivity
                         mLastLocation = location;
                         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
                         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                        mMap.animateCamera(CameraUpdateFactory.zoomTo(14));
                     }
                 }
             }
@@ -218,6 +267,23 @@ public class MapActivity extends AppCompatActivity
                         Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
                 MY_PERMISSIONS_REQUEST_READ_CONTACTS);
     }
+    private void updateDrawerUI(FirebaseUser currentUser) {
+        if (currentUser != null) {
+            String userName = currentUser.getDisplayName();
+            String userEmail = currentUser.getEmail();
+            Uri userIcon = currentUser.getPhotoUrl();
+
+            if (userName != null) { mUserName.setText(userName); }
+            if (userEmail != null){ mEmailAddress.setText(userEmail); }
+            if (userIcon != null){
+                Glide.with(getApplicationContext())
+                        .load(userIcon)
+                        .apply(RequestOptions.circleCropTransform())
+                        .into(mUserIcon);
+            }
+        }
+    }
+
 
 
 

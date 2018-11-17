@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
                 mAuth = FirebaseAuth.getInstance();
                 String user_id = mAuth.getCurrentUser().getUid();
                 addUserIdtoFirebase(user_id);
-                startActivityFinishCurrentActivity(CustomerMapActivity.class);
+                startActivityFinishCurrentActivity(MapActivity.class);
 
             } else {// Sign in failed
                 if (response == null) {// User pressed back button
