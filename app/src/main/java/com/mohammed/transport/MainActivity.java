@@ -76,6 +76,7 @@ public class MainActivity extends AppCompatActivity{
                                 new AuthUI.IdpConfig.EmailBuilder().build()))
                         .setIsSmartLockEnabled(false)
                         .setTheme(R.style.AppTheme)
+                        .setLogo(R.mipmap.ic_launcher)
                         .build(),
                 RC_SIGN_IN);
     }
