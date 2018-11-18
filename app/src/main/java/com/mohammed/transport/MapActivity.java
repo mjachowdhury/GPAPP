@@ -17,7 +17,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -39,12 +38,18 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
 
 public class MapActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback {
@@ -52,7 +57,7 @@ public class MapActivity extends AppCompatActivity
     private static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 987;
     private GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationClient;
-    public  Location mLastLocation;
+    public Location mLastLocation;
     private LocationRequest mLocationRequest;
     private LocationCallback mLocationCallback = getLocationCallback();
 
@@ -61,7 +66,7 @@ public class MapActivity extends AppCompatActivity
     private SupportMapFragment mapFragment;
 
     private ImageView mUserIcon;
-    private TextView mUserName,mEmailAddress;
+    private TextView mUserName, mEmailAddress;
 
 
     @Override
@@ -71,14 +76,18 @@ public class MapActivity extends AppCompatActivity
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        mAuth = FirebaseAuth.getInstance();
+
         FloatingActionButton fab = findViewById(R.id.floating_call_my_taxi);
+        FloatingActionButton floatingSearchDriver = findViewById(R.id.floating_search_driver);
 
 
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        fab.setOnClickListener((View v) -> callMyTaxi());
+        fab.setOnClickListener((View v) -> callMyTaxi(mAuth.getUid()));
+        floatingSearchDriver.setOnClickListener((View v) -> searchMyDriver());
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -90,17 +99,15 @@ public class MapActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
         View headerView = navigationView.getHeaderView(0);
 
-        mAuth = FirebaseAuth.getInstance();
+
         mUserIcon = headerView.findViewById(R.id.mUserIcon);
         mUserName = headerView.findViewById(R.id.mUserName);
         mEmailAddress = headerView.findViewById(R.id.mEmailAddress);
         updateDrawerUI(mAuth.getCurrentUser());
 
 
-
-
-
     }
+
 
     @Override
     public void onBackPressed() {
@@ -210,11 +217,10 @@ public class MapActivity extends AppCompatActivity
         }
     }
 
-    private void callMyTaxi() {
-        Log.d("Maps Activity", "Taxi as been called");
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Users/Customers/").child("0ZJDXv6wRjcNhcB6skf1uNjm4jG3");
+    private void callMyTaxi(String currentUserID) {
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Users/Customers/").child(currentUserID);
         geoFire = new GeoFire(ref);
-        geoFire.setLocation("firebase-hq", new GeoLocation(mLastLocation.getLatitude(), mLastLocation.getLongitude()), new GeoFire.CompletionListener() {
+        geoFire.setLocation("customerRequest", new GeoLocation(mLastLocation.getLatitude(), mLastLocation.getLongitude()), new GeoFire.CompletionListener() {
             /**
              * Called once a location was successfully saved on the server or an error occurred. On success, the parameter
              * error will be null; in case of an error, the error will be passed to this method.
@@ -225,7 +231,7 @@ public class MapActivity extends AppCompatActivity
             @Override
             public void onComplete(String key, DatabaseError error) {
                 if (error != null) {
-                    Toast.makeText(getApplicationContext(), R.string.unknown_error, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), error.getCode(), Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(getApplicationContext(), R.string.calling_taxi, Toast.LENGTH_SHORT).show();
                 }
@@ -244,12 +250,12 @@ public class MapActivity extends AppCompatActivity
                         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
                         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
                         mMap.animateCamera(CameraUpdateFactory.zoomTo(14));
+
                     }
                 }
             }
         };
     }
-
 
     private void logoutFromFirebase() {
         AuthUI.getInstance()
@@ -267,15 +273,19 @@ public class MapActivity extends AppCompatActivity
                         Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
                 MY_PERMISSIONS_REQUEST_READ_CONTACTS);
     }
+
     private void updateDrawerUI(FirebaseUser currentUser) {
         if (currentUser != null) {
             String userName = currentUser.getDisplayName();
             String userEmail = currentUser.getEmail();
             Uri userIcon = currentUser.getPhotoUrl();
-
-            if (userName != null) { mUserName.setText(userName); }
-            if (userEmail != null){ mEmailAddress.setText(userEmail); }
-            if (userIcon != null){
+            if (userName != null) {
+                mUserName.setText(userName);
+            }
+            if (userEmail != null) {
+                mEmailAddress.setText(userEmail);
+            }
+            if (userIcon != null) {
                 Glide.with(getApplicationContext())
                         .load(userIcon)
                         .apply(RequestOptions.circleCropTransform())
@@ -284,7 +294,29 @@ public class MapActivity extends AppCompatActivity
         }
     }
 
+    private void searchMyDriver() {
+        DatabaseReference staticDriverLocationDB = FirebaseDatabase.getInstance().getReference("StaticDriverLocation").child("l");
+        staticDriverLocationDB.addListenerForSingleValueEvent(
+                new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        ArrayList<String> driverLocation = (ArrayList<String>) dataSnapshot.getValue();
+                        if (driverLocation != null) {
+                            String latitude = driverLocation.get(0);
+                            String longitude = driverLocation.get(1);
+                            LatLng driverLocationLatLng = new LatLng(Double.valueOf(latitude), Double.valueOf(longitude));
+                            mMap.addMarker(new MarkerOptions().position(driverLocationLatLng).icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_car)));
+                        } else {
+                            Toast.makeText(getApplicationContext(), R.string.unknown_error, Toast.LENGTH_SHORT).show();
+                        }
+                    }
 
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Toast.makeText(getApplicationContext(), databaseError.getCode(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
 
 
 }

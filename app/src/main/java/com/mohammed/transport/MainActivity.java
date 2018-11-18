@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
         map.put("phone", firebaseUser.getPhoneNumber());
         map.put("email", firebaseUser.getEmail());
         map.put("profileImageUrl", userIcon != null ? userIcon.toString() : "");
-        Log.d("DB",map.toString());
+
         DatabaseReference current_user_db = FirebaseDatabase.getInstance().getReference("Users/Customers").child(userID);
         current_user_db.setValue(true); // Create the node User ID
         current_user_db.setValue(map);  // add Information to that user
