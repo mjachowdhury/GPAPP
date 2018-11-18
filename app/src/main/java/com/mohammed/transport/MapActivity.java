@@ -218,24 +218,13 @@ public class MapActivity extends AppCompatActivity
     }
 
     private void callMyTaxi(String currentUserID) {
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("Users/Customers/").child(currentUserID);
-        geoFire = new GeoFire(ref);
-        geoFire.setLocation("customerRequest", new GeoLocation(mLastLocation.getLatitude(), mLastLocation.getLongitude()), new GeoFire.CompletionListener() {
-            /**
-             * Called once a location was successfully saved on the server or an error occurred. On success, the parameter
-             * error will be null; in case of an error, the error will be passed to this method.
-             *
-             * @param key   The key whose location was saved
-             * @param error The error or null if no error occurred
-             */
-            @Override
-            public void onComplete(String key, DatabaseError error) {
-                if (error != null) {
-                    Toast.makeText(getApplicationContext(), error.getCode(), Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(getApplicationContext(), R.string.calling_taxi, Toast.LENGTH_SHORT).show();
-                }
-            }
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("customerRequest");
+        GeoFire geoFire = new GeoFire(ref);
+        geoFire.setLocation(currentUserID, new GeoLocation(mLastLocation.getLatitude(), mLastLocation.getLongitude()),
+                (key, error) -> {
+            Toast.makeText(getApplicationContext(),R.string.calling_taxi, Toast.LENGTH_SHORT).show();
+            LatLng customerLocationRequest = new LatLng(mLastLocation.getLatitude(),mLastLocation.getLongitude());
+            mMap.addMarker(new MarkerOptions().position(customerLocationRequest).icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_pickup)));
         });
     }
 

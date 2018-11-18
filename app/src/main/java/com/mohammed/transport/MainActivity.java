@@ -5,7 +5,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
@@ -20,24 +19,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity{
     private static final int RC_SIGN_IN = 123;
-    private Button mDriver, mCustomer;
     private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        mDriver = findViewById(R.id.driver);
-        mCustomer = findViewById(R.id.customer);
-
-        //setting onclick listener for driver and customer
-        startService(new Intent(MainActivity.this, onAppKilled.class));
-        mDriver.setOnClickListener(v -> startActivityFinishCurrentActivity(MapActivity.class));
-
-        mCustomer.setOnClickListener(v -> signInFirebaseUI());
+        signInFirebaseUI();
     }
 
     private void startActivityFinishCurrentActivity(Class activity) {
@@ -45,21 +35,6 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
         finish();
     }
-
-    private void signInFirebaseUI() {
-        startActivityForResult(
-                AuthUI.getInstance()
-                        .createSignInIntentBuilder()
-                        .setAvailableProviders(Arrays.asList(
-                                new AuthUI.IdpConfig.GoogleBuilder().build(),
-                                new AuthUI.IdpConfig.FacebookBuilder().build(),
-                                new AuthUI.IdpConfig.EmailBuilder().build()))
-                        .setIsSmartLockEnabled(false)
-                        .setTheme(R.style.AppTheme)
-                        .build(),
-                RC_SIGN_IN);
-    }
-
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RC_SIGN_IN) { // Successfully signed in
@@ -91,6 +66,20 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void signInFirebaseUI() {
+        startActivityForResult(
+                AuthUI.getInstance()
+                        .createSignInIntentBuilder()
+                        .setAvailableProviders(Arrays.asList(
+                                new AuthUI.IdpConfig.GoogleBuilder().build(),
+                                new AuthUI.IdpConfig.FacebookBuilder().build(),
+                                new AuthUI.IdpConfig.EmailBuilder().build()))
+                        .setIsSmartLockEnabled(false)
+                        .setTheme(R.style.AppTheme)
+                        .build(),
+                RC_SIGN_IN);
+    }
+
     /**
      * @param firebaseUser
      * add a New firebase User
@@ -107,14 +96,5 @@ public class MainActivity extends AppCompatActivity {
         DatabaseReference current_user_db = FirebaseDatabase.getInstance().getReference("Users/Customers").child(userID);
         current_user_db.setValue(true); // Create the node User ID
         current_user_db.setValue(map);  // add Information to that user
-
-
-
-
-
-
-
-
-
     }
 }
