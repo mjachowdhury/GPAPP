@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="fetch_firebase_failed">Failed to connect to Firebase</string>
+    <string name="driver_close">Driver Close</string>
+    <string name="driver_far">Driver is far away</string>
 </resources>

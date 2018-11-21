@@ -21,6 +21,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,6 +29,8 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.firebase.geofire.GeoFire;
 import com.firebase.geofire.GeoLocation;
+import com.firebase.geofire.GeoQuery;
+import com.firebase.geofire.GeoQueryEventListener;
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -61,9 +64,13 @@ public class MapActivity extends AppCompatActivity
     private LocationRequest mLocationRequest;
     private LocationCallback mLocationCallback = getLocationCallback();
 
-    private GeoFire geoFire;
     private FirebaseAuth mAuth;
     private SupportMapFragment mapFragment;
+
+    private LinearLayout mDriverInfo;
+    private TextView mDriverName;
+    private TextView mDriverPhone;
+    private TextView  mDriverCar;
 
     private ImageView mUserIcon;
     private TextView mUserName, mEmailAddress;
@@ -78,6 +85,11 @@ public class MapActivity extends AppCompatActivity
 
         mAuth = FirebaseAuth.getInstance();
 
+        mDriverInfo = findViewById(R.id.driverInfo);
+        mDriverName = findViewById(R.id.driverName);
+        mDriverPhone = findViewById(R.id.driverPhone);
+        mDriverCar = findViewById(R.id.driverCar);
+
         FloatingActionButton fab = findViewById(R.id.floating_call_my_taxi);
         FloatingActionButton floatingSearchDriver = findViewById(R.id.floating_search_driver);
 
@@ -87,7 +99,7 @@ public class MapActivity extends AppCompatActivity
         mapFragment.getMapAsync(this);
 
         fab.setOnClickListener((View v) -> callMyTaxi(mAuth.getUid()));
-        floatingSearchDriver.setOnClickListener((View v) -> searchMyDriver());
+        floatingSearchDriver.setOnClickListener((View v) -> getDriversLocation());
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -218,15 +230,101 @@ public class MapActivity extends AppCompatActivity
     }
 
     private void callMyTaxi(String currentUserID) {
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("customerRequest");
-        GeoFire geoFire = new GeoFire(ref);
-        geoFire.setLocation(currentUserID, new GeoLocation(mLastLocation.getLatitude(), mLastLocation.getLongitude()),
-                (key, error) -> {
-            Toast.makeText(getApplicationContext(),R.string.calling_taxi, Toast.LENGTH_SHORT).show();
-            LatLng customerLocationRequest = new LatLng(mLastLocation.getLatitude(),mLastLocation.getLongitude());
-            mMap.addMarker(new MarkerOptions().position(customerLocationRequest).icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_pickup)));
-        });
+        if (mLastLocation!=null){
+            DatabaseReference customerRequestdb = FirebaseDatabase.getInstance().getReference("customerRequest");
+            GeoLocation userCurrentGeolocation = new GeoLocation(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+            GeoFire geoFire = new GeoFire(customerRequestdb);
+            geoFire.setLocation(currentUserID, userCurrentGeolocation,
+                    (key, error) -> {
+                Toast.makeText(getApplicationContext(),R.string.calling_taxi, Toast.LENGTH_SHORT).show();
+                LatLng customerLocationRequest = new LatLng(mLastLocation.getLatitude(),mLastLocation.getLongitude());
+                mMap.addMarker(new MarkerOptions().position(customerLocationRequest).icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_pickup)));
+            });
+
+
+            GeoQuery geoQuery = geoFire.queryAtLocation(userCurrentGeolocation, 0.6);
+            geoQuery.removeAllListeners();
+            geoQuery.addGeoQueryEventListener(new GeoQueryEventListener() {
+                @Override
+                public void onKeyEntered(String key, GeoLocation location) {
+                    DatabaseReference driverRequestdb = FirebaseDatabase.getInstance().getReference("StaticDriverLocation").child("l");
+                    driverRequestdb.addListenerForSingleValueEvent(
+                            new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    ArrayList<Object> driverLocation = (ArrayList<Object>) dataSnapshot.getValue();
+                                    if (driverLocation != null) {
+                                        String latitude = driverLocation.get(0).toString();
+                                        String longitude = driverLocation.get(1).toString();
+                                        GeoLocation currentDriverGeolocation = new GeoLocation(Double.valueOf(latitude), Double.valueOf(longitude));
+
+                                        if(isDistanceBetweenUserAndDriverClose(userCurrentGeolocation,currentDriverGeolocation)){
+                                            Toast.makeText(getApplicationContext(), R.string.driver_close, Toast.LENGTH_SHORT).show();
+                                            showDriverInfo();
+                                        } else {
+                                            Toast.makeText(getApplicationContext(), R.string.driver_far, Toast.LENGTH_SHORT).show();
+                                        }
+                                    } else {
+                                        Toast.makeText(getApplicationContext(), R.string.unknown_error, Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+                                    Toast.makeText(getApplicationContext(), databaseError.getCode(), Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                }
+
+                @Override
+                public void onKeyExited(String key) {
+                    System.out.println(String.format("Key %s is no longer in the search area", key));
+                }
+
+                @Override
+                public void onKeyMoved(String key, GeoLocation location) {
+                    System.out.println(String.format("Key %s moved within the search area to [%f,%f]", key, location.latitude, location.longitude));
+                }
+
+                @Override
+                public void onGeoQueryReady() {
+                    System.out.println("All initial data has been loaded and events have been fired!");
+                }
+
+                @Override
+                public void onGeoQueryError(DatabaseError error) {
+                    System.err.println("There was an error with this query: " + error);
+                }
+            });
+        }
+
+
     }
+
+    private void showDriverInfo() {
+        mDriverInfo.setVisibility(View.VISIBLE);
+        mDriverName.setText("DRIVER_NAME");
+        mDriverPhone.setText("DRIVER_PHONE");
+        mDriverCar.setText("DRIVER_CAR");
+
+    }
+
+    private boolean isDistanceBetweenUserAndDriverClose(GeoLocation userCurrentGeolocation, GeoLocation currentDriverGeolocation ){
+        Location loc1 = new Location("");
+        loc1.setLatitude(userCurrentGeolocation.latitude);
+        loc1.setLongitude(userCurrentGeolocation.longitude);
+
+        Location loc2 = new Location("");
+        loc2.setLatitude(currentDriverGeolocation.latitude);
+        loc2.setLongitude(currentDriverGeolocation.longitude);
+
+        //getting the distance between the driver and vehicle
+        float distance = loc1.distanceTo(loc2);
+
+        return distance < 200; // if distance < 200 return true else false
+
+    }
+
 
     @NonNull
     private LocationCallback getLocationCallback() {
@@ -283,7 +381,7 @@ public class MapActivity extends AppCompatActivity
         }
     }
 
-    private void searchMyDriver() {
+    private void getDriversLocation() {
         DatabaseReference staticDriverLocationDB = FirebaseDatabase.getInstance().getReference("StaticDriverLocation").child("l");
         staticDriverLocationDB.addListenerForSingleValueEvent(
                 new ValueEventListener() {

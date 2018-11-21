@@ -25,4 +25,7 @@
     <string name="nav_logout">Logout</string>
     <string name="calling_taxi">Calling your Taxi</string>
     <string name="fetch_firebase_failed">Failed to connect to Firebase</string>
+    <string name="driver_found">Driver Found</string>
+    <string name="driver_close">Driver Close</string>
+    <string name="driver_far">Driver is far away</string>
 </resources>
