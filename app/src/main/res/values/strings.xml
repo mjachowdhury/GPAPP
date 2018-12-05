@@ -28,4 +28,5 @@
     <string name="driver_found">Driver Found</string>
     <string name="driver_close">Driver Close</string>
     <string name="driver_far">Driver is far away</string>
+    <string name="title_activity_payment">paymentActivity</string>
 </resources>
