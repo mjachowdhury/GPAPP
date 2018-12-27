@@ -1,6 +1,7 @@
 package com.mohammed.transport;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -17,6 +18,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,6 +27,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.braintreepayments.api.dropin.DropInActivity;
+import com.braintreepayments.api.dropin.DropInRequest;
+import com.braintreepayments.api.dropin.DropInResult;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.firebase.geofire.GeoFire;
@@ -58,6 +63,10 @@ public class MapActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, OnMapReadyCallback {
 
     private static final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 987;
+    private static final int DROP_IN_REQUEST = 145;
+    final String mClientToken = "sandbox_vf4f346q_n8w5dnnq4ds5kwgr";
+    final String paypalToken = "access_token$sandbox$g7qtnhxp2hqmn8gk$14ea2b7e8b4c834b8780ae245941e9a1";
+
     private GoogleMap mMap;
     private FusedLocationProviderClient mFusedLocationClient;
     public Location mLastLocation;
@@ -70,7 +79,7 @@ public class MapActivity extends AppCompatActivity
     private LinearLayout mDriverInfo;
     private TextView mDriverName;
     private TextView mDriverPhone;
-    private TextView  mDriverCar;
+    private TextView mDriverCar;
 
     private ImageView mUserIcon;
     private TextView mUserName, mEmailAddress;
@@ -166,7 +175,6 @@ public class MapActivity extends AppCompatActivity
                 Intent intentH = new Intent(this, HistoryActivity.class);
                 intentH.putExtra("customerOrDriver", "Customers");
                 startActivity(intentH);
-                break;
             case R.id.nav_logout:
                 logoutFromFirebase();
                 break;
@@ -204,6 +212,28 @@ public class MapActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == DROP_IN_REQUEST) {
+            if (resultCode == Activity.RESULT_OK) {
+                DropInResult result = data.getParcelableExtra(DropInResult.EXTRA_DROP_IN_RESULT);
+                result.describeContents();
+                result.getPaymentMethodType();
+                result.getPaymentMethodType();
+                String paymentMethodNonce = result.getPaymentMethodNonce().getNonce();
+                Log.d("Payment", paymentMethodNonce);
+                Toast.makeText(getApplicationContext(), "Payment Succesfull", Toast.LENGTH_SHORT).show();
+            } else if (resultCode == Activity.RESULT_CANCELED) {
+                Toast.makeText(getApplicationContext(), "cancelled", Toast.LENGTH_SHORT).show();
+            } else {
+                // an error occurred, checked the returned exception
+                Exception exception = (Exception) data.getSerializableExtra(DropInActivity.EXTRA_ERROR);
+
+                Toast.makeText(getApplicationContext(), "error", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
@@ -230,16 +260,17 @@ public class MapActivity extends AppCompatActivity
     }
 
     private void callMyTaxi(String currentUserID) {
-        if (mLastLocation!=null){
+        getPaymentRequest();
+        if (mLastLocation != null) {
             DatabaseReference customerRequestdb = FirebaseDatabase.getInstance().getReference("customerRequest");
             GeoLocation userCurrentGeolocation = new GeoLocation(mLastLocation.getLatitude(), mLastLocation.getLongitude());
             GeoFire geoFire = new GeoFire(customerRequestdb);
             geoFire.setLocation(currentUserID, userCurrentGeolocation,
                     (key, error) -> {
-                Toast.makeText(getApplicationContext(),R.string.calling_taxi, Toast.LENGTH_SHORT).show();
-                LatLng customerLocationRequest = new LatLng(mLastLocation.getLatitude(),mLastLocation.getLongitude());
-                mMap.addMarker(new MarkerOptions().position(customerLocationRequest).icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_pickup)));
-            });
+                        Toast.makeText(getApplicationContext(), R.string.calling_taxi, Toast.LENGTH_SHORT).show();
+                        LatLng customerLocationRequest = new LatLng(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+                        mMap.addMarker(new MarkerOptions().position(customerLocationRequest).icon(BitmapDescriptorFactory.fromResource(R.mipmap.ic_pickup)));
+                    });
 
 
             GeoQuery geoQuery = geoFire.queryAtLocation(userCurrentGeolocation, 0.6);
@@ -258,9 +289,11 @@ public class MapActivity extends AppCompatActivity
                                         String longitude = driverLocation.get(1).toString();
                                         GeoLocation currentDriverGeolocation = new GeoLocation(Double.valueOf(latitude), Double.valueOf(longitude));
 
-                                        if(isDistanceBetweenUserAndDriverClose(userCurrentGeolocation,currentDriverGeolocation)){
+                                        if (isDistanceBetweenUserAndDriverClose(userCurrentGeolocation, currentDriverGeolocation)) {
                                             Toast.makeText(getApplicationContext(), R.string.driver_close, Toast.LENGTH_SHORT).show();
                                             showDriverInfo();
+
+                                            //getPaymentRequest();
                                         } else {
                                             Toast.makeText(getApplicationContext(), R.string.driver_far, Toast.LENGTH_SHORT).show();
                                         }
@@ -301,6 +334,17 @@ public class MapActivity extends AppCompatActivity
 
     }
 
+    private void getPaymentRequest() {
+        DropInRequest dropInRequest = new DropInRequest()
+                .clientToken(mClientToken)
+                //.tokenizationKey(mClientToken)
+                .amount("1.00")
+                .disableAndroidPay()
+                .disableGooglePayment();
+
+        startActivityForResult(dropInRequest.getIntent(getApplicationContext()), DROP_IN_REQUEST);
+    }
+
     private void showDriverInfo() {
         mDriverInfo.setVisibility(View.VISIBLE);
         mDriverName.setText("DRIVER_NAME");
@@ -309,7 +353,7 @@ public class MapActivity extends AppCompatActivity
 
     }
 
-    private boolean isDistanceBetweenUserAndDriverClose(GeoLocation userCurrentGeolocation, GeoLocation currentDriverGeolocation ){
+    private boolean isDistanceBetweenUserAndDriverClose(GeoLocation userCurrentGeolocation, GeoLocation currentDriverGeolocation) {
         Location loc1 = new Location("");
         loc1.setLatitude(userCurrentGeolocation.latitude);
         loc1.setLongitude(userCurrentGeolocation.longitude);
